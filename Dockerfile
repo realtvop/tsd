@@ -37,8 +37,8 @@ ENV TS_EXTRA_ARGS="--advertise-tags=tag:container"
 # ==========================
 
 # 安装依赖（与原 Dockerfile 保持一致）
-RUN apt-get update && \
-    apt-get install -y openssl curl
+RUN apk update && \
+    apk add openssl curl
 
 #RUN curl -fsSL https://tailscale.com/install.sh | sh
 
