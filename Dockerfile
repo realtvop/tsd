@@ -17,7 +17,7 @@ RUN cd /app/tailscale/cmd/derper && \
     cd /app && \
     rm -rf /app/tailscale
 
-FROM ubuntu:20.04
+FROM ghcr.io/tailscale/tailscale:latest
 WORKDIR /app
 
 # ========= CONFIG =========
@@ -31,26 +31,24 @@ ENV DERP_STUN_PORT=3478
 # 不修改，兼容旧版
 ENV DERP_VERIFY_CLIENTS=false
 # 适配自带防盗
-ENV REG_BASH='echo "No reg bash need to run."'
+ENV TS_AUTHKEY=""
+ENV TS_STATE_DIR=/var/lib/tailscale
+ENV TS_EXTRA_ARGS="--advertise-tags=tag:container"
 # ==========================
 
 # 安装依赖（与原 Dockerfile 保持一致）
 RUN apt-get update && \
     apt-get install -y openssl curl
 
-RUN curl -fsSL https://tailscale.com/install.sh | sh
+#RUN curl -fsSL https://tailscale.com/install.sh | sh
 
 # 复制构建好的二进制文件和证书生成脚本
 COPY --from=builder /app/derper /app/derper
 COPY build_cert.sh /app/
 
-# 添加健康检查（基于 GitHub Actions 工作流中的测试步骤）
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost:$DERP_HTTP_PORT || exit 1
-
 # build self-signed certs && start derper
 CMD bash /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
-    $REG_BASH && \
+    tailscale netcheck && \
     /app/derper --hostname=$DERP_HOST \
     --certmode=manual \
     --certdir=$DERP_CERTS \
