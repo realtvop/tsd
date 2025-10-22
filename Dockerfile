@@ -45,13 +45,12 @@ RUN apk update && \
 # 复制构建好的二进制文件和证书生成脚本
 COPY --from=builder /app/derper /app/derper
 COPY build_cert.sh /app/
+COPY start_ts.sh /app/
 
-# Start tailscaled without tun
-CMD tailscaled --tun=userspace-networking &
-CMD tailscale up --auth-key=$TS_AUTHKEY &
 
 # build self-signed certs && start derper
-CMD /bin/sh /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
+CMD /bin/sh /app/start_ts.sh && \
+    /bin/sh /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
     tailscale netcheck && \
     /app/derper --hostname=$DERP_HOST \
     --certmode=manual \
