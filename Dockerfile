@@ -22,7 +22,7 @@ WORKDIR /app
 
 # ========= CONFIG =========
 # - derper args
-ENV DERP_ADDR=:443
+ENV DERP_ADDR=443
 ENV DERP_HTTP_PORT=80
 ENV DERP_HOST=127.0.0.1
 ENV DERP_CERTS=/app/certs
@@ -47,7 +47,7 @@ COPY --from=builder /app/derper /app/derper
 COPY build_cert.sh /app/
 
 # Start tailscaled without tun
-CMD tailscaled --tun=userspace-networking
+CMD tailscaled --tun=userspace-networking &
 CMD tailscale up --auth-key=$TS_AUTHKEY &
 
 # build self-signed certs && start derper
@@ -57,7 +57,7 @@ CMD bash /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
     --certmode=manual \
     --certdir=$DERP_CERTS \
     --stun=$DERP_STUN  \
-    --a=$DERP_ADDR \
+    --a=:$DERP_ADDR \
     --http-port=$DERP_HTTP_PORT \
     --verify-clients=$DERP_VERIFY_CLIENTS \
     --stun-port=$DERP_STUN_PORT
