@@ -1,6 +1,6 @@
 FROM golang:latest AS builder
 
-LABEL org.opencontainers.image.source = https://github.com/skyhhjmk/ip_derper_plus
+LABEL org.opencontainers.image.source = https://github.com/realtvop/ip_derper_air
 
 WORKDIR /app
 
@@ -45,6 +45,10 @@ RUN apk update && \
 # 复制构建好的二进制文件和证书生成脚本
 COPY --from=builder /app/derper /app/derper
 COPY build_cert.sh /app/
+
+# Start tailscaled without tun
+CMD tailscaled --tun=userspace-networking
+CMD tailscale up --auth-key=$TS_AUTHKEY &
 
 # build self-signed certs && start derper
 CMD bash /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
