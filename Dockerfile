@@ -51,7 +51,7 @@ CMD tailscaled --tun=userspace-networking &
 CMD tailscale up --auth-key=$TS_AUTHKEY &
 
 # build self-signed certs && start derper
-CMD bash /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
+CMD /bin/sh /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
     tailscale netcheck && \
     /app/derper --hostname=$DERP_HOST \
     --certmode=manual \
